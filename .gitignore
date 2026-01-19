@@ -56,3 +56,6 @@ dkms.conf
 
 # objects dir(runtime && frontend.)
 objects/*/*
+
+# executable.
+main
