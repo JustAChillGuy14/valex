@@ -9,7 +9,7 @@ Clone the repository:
 
 ```sh
 git clone https://github.com/JustAChillGuy14/valex
-cd repo
+cd valex
 ```
 
 Build & Run:
