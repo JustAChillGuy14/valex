@@ -115,7 +115,7 @@ Token *tokenize(const char *src)
                 if (len == cap)
                 {
                     cap += 1024;
-                    char *tmp = realloc(buf, cap);
+                    char *tmp = realloc(buf, cap + 1);
                     if (!tmp)
                     {
                         free(buf);
@@ -155,7 +155,7 @@ Token *tokenize(const char *src)
                 if (len == cap)
                 {
                     cap += 1024;
-                    char *tmp = realloc(buf, cap);
+                    char *tmp = realloc(buf, cap + 1);
                     if (!tmp)
                     {
                         free(buf);
@@ -169,6 +169,43 @@ Token *tokenize(const char *src)
             buf[len++] = '\0';
             tk_arr_append(&ret, token(buf, TOKENTYPE_Number));
             free(buf);
+        }
+        else if (*src == '"')
+        {
+            size_t len = 0;
+            size_t cap = 1024;
+            char *buf = malloc(cap + 1);
+            if (!buf)
+            {
+                fprintf(stderr, "Memory allocation error. Happened during number building\n");
+                exit(EXIT_FAILURE);
+            }
+            src++;
+            while (*src && *src != '"')
+            {
+                if (len == cap)
+                {
+                    cap += 1024;
+                    char *tmp = realloc(buf, cap);
+                    if (!tmp)
+                    {
+                        free(buf);
+                        fprintf(stderr, "Memory reallocation error. Happened during number building.\n");
+                        exit(EXIT_FAILURE);
+                    }
+                    buf = tmp;
+                }
+                buf[len++] = *src++;
+            }
+            if (*src != '"') //We reached end of src,but didnt get '"'
+            {
+                fprintf(stderr,"String literal not ended.\n");
+                exit(EXIT_FAILURE);
+            }
+            buf[len++] = '\0';
+            tk_arr_append(&ret, token(buf, TOKENTYPE_String));
+            free(buf);
+            src++;
         }
         else if (*src == '(')
         {

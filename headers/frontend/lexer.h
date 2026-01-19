@@ -4,6 +4,7 @@
 typedef enum
 {
     TOKENTYPE_Number,
+    TOKENTYPE_String,
     TOKENTYPE_Identifier,
     TOKENTYPE_BinaryOperator,
     TOKENTYPE_OpenParen,

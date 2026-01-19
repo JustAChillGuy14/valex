@@ -5,6 +5,7 @@ typedef enum
 {
     // Literals
     EXPR_NumericLiteral,
+    EXPR_StringLiteral,
     EXPR_Identifier,
     // Expressions
     EXPR_BinaryExpr,
@@ -17,6 +18,11 @@ typedef struct
 {
     int x;
 } NumericLiteral;
+
+typedef struct
+{
+    char *s;
+} StringLiteral;
 
 typedef struct
 {
@@ -42,6 +48,7 @@ struct Expr
     union
     {
         NumericLiteral n;
+        StringLiteral s;
         Identifier i;
         BinaryExpr be;
         AssignmentExpr a;
@@ -81,6 +88,7 @@ typedef struct
 } Program;
 
 Expr *make_expr_numeric(int n);
+Expr *make_expr_string(char *s);
 Expr *make_expr_ident(char *symbol);
 Expr *make_expr_binary(Expr *left, Expr *right, char *op);
 Expr *make_expr_assignment(Expr *assigne,Expr *value);

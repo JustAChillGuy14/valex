@@ -154,6 +154,8 @@ Expr *parse_primary_expr(Parser *p)
         return make_expr_ident(eat(p).value);
     case TOKENTYPE_Number:
         return make_expr_numeric(atoi(eat(p).value));
+    case TOKENTYPE_String:
+        return make_expr_string(eat(p).value);
     case TOKENTYPE_OpenParen:
         eat(p);
         Expr *ret = parse_expr(p);

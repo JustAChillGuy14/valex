@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "runtime/values.h"
 
+#include "frontend/lexer.h"
+
 RuntimeVal runtimeval_null() 
 {
     RuntimeVal ret;
@@ -17,6 +19,19 @@ RuntimeVal runtimeval_number(double val)
     return ret;
 }
 
+RuntimeVal runtimeval_string(char *s)
+{
+    RuntimeVal ret;
+    ret.type = VAL_String;
+    ret.data.s.value = my_str_dup(s);
+    if (!ret.data.s.value)
+    {
+        fprintf(stderr,"Memory allocation error. Happened while allocating memory for StringVal.\n");
+        exit(EXIT_FAILURE);
+    }
+    return ret;
+}
+
 void dump_value(RuntimeVal val)
 {
     switch (val.type)
@@ -24,11 +39,30 @@ void dump_value(RuntimeVal val)
     case VAL_Number:
         printf("%f\n",val.data.n.value);
         break;
+    case VAL_String:
+        printf("%s\n",val.data.s.value);
+        break;
     case VAL_Null:
         printf("null\n");
         break;
     default:
         fprintf(stderr,"Exhaustive handling of ValueType in dump_value.\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void free_value(RuntimeVal *value)
+{
+    switch (value->type)
+    {
+    case VAL_Null:
+    case VAL_Number:
+        break;
+    case VAL_String:
+        free(value->data.s.value);
+        break;
+    default:
+        fprintf(stderr,"Exhaustive handling of ValueType in free_value.\n");
         exit(EXIT_FAILURE);
     }
 }

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "frontend/ast.h"
 #include "runtime/values.h"
@@ -42,6 +43,8 @@ RuntimeVal eval_expr(Expr *expr, Scope *scope)
     {
     case EXPR_NumericLiteral:
         return runtimeval_number(expr->data.n.x);
+    case EXPR_StringLiteral:
+        return runtimeval_string(expr->data.s.s);
     case EXPR_Identifier:
         return getvar(scope, expr->data.i.symbol);
     case EXPR_BinaryExpr:
@@ -69,7 +72,73 @@ RuntimeVal eval_binary_expr(BinaryExpr be, Scope *scope)
         return eval_numeric_binary_expr(left.data.n, right.data.n, be.op);
     }
 
+    if (left.type == VAL_String && right.type == VAL_String)
+    {
+        return eval_string_binary_expr(left.data.s,right.data.s,be.op);
+    }
+
+    if ((left.type == VAL_Number && right.type == VAL_String) || (left.type == VAL_String && right.type == VAL_Number))
+    {
+        if (left.type == VAL_Number)
+            return eval_numeric_string_binary_expr(left.data.n, right.data.s, be.op);
+        else
+            return eval_numeric_string_binary_expr(right.data.n, left.data.s, be.op);
+    }
+
     fprintf(stderr, "Exhaustive handling of operand types in eval_binary_expr\n");
+    exit(EXIT_FAILURE);
+}
+
+RuntimeVal eval_string_binary_expr(StringVal left, StringVal right, char *op)
+{
+    if (!strcmp(op, "+"))
+    {
+        size_t len = 0;
+        size_t cap = 1024;
+        char *buf = malloc(cap + 1);
+
+        if (!buf)
+        {
+            fprintf(stderr, "Memory allocation error happened during addition of string %s and string %s", right.value, left.value);
+            exit(EXIT_FAILURE);
+        }
+
+        for (size_t i = 0; left.value[i]; i++)
+        {
+            if (len == cap)
+            {
+                cap += 1024;
+                buf = realloc(buf, cap + 1);
+                if (!buf)
+                {
+                    fprintf(stderr, "Memory allocation error happened during addition of string %s and string %s", right.value, left.value);
+                    exit(EXIT_FAILURE);
+                }
+            }
+            buf[len++] = left.value[i];
+        }
+
+        for (size_t i = 0; right.value[i]; i++)
+        {
+            if (len == cap)
+            {
+                cap += 1024;
+                buf = realloc(buf, cap + 1);
+                if (!buf)
+                {
+                    fprintf(stderr, "Memory allocation error happened during addition of string %s and string %s", right.value, left.value);
+                    exit(EXIT_FAILURE);
+                }
+            }
+            buf[len++] = right.value[i];
+        }
+        buf[len++] = '\0';
+        RuntimeVal ret = runtimeval_string(buf);
+        free(buf);
+        return ret;
+    }
+
+    fprintf(stderr,"Invalid operand operation %s for operand types \"string\" and \"string\"\n",op);
     exit(EXIT_FAILURE);
 }
 
@@ -96,12 +165,54 @@ RuntimeVal eval_numeric_binary_expr(NumberVal left, NumberVal right, char *op)
     exit(EXIT_FAILURE);
 }
 
+RuntimeVal eval_numeric_string_binary_expr(NumberVal left, StringVal right, char *op)
+{
+    if (!strcmp(op, "*"))
+    {
+        if (left.value != floor(left.value))
+        {
+            fprintf(stderr, "Cannot multiply string with non-integer.");
+            exit(EXIT_FAILURE);
+        }
+
+        //size_t i = 0;
+        size_t len = strlen(right.value);
+        size_t total = left.value * len;
+        char *buf = malloc(total + 1);
+
+        if (!buf)
+        {
+            fprintf(stderr, "Memory allocation error happened during multiplication of string %s and int %.0f", right.value, left.value);
+            exit(EXIT_FAILURE);
+        }
+
+         // Copy first instance
+        memcpy(buf, right.value, len);
+        size_t copied = len;        
+
+        while (copied < total)
+        {
+            size_t to_copy = (copied > total - copied) ? total - copied : copied;
+            memcpy(buf + copied, buf, to_copy);
+            copied += to_copy;
+        }
+
+        buf[total] = '\0';
+        RuntimeVal ret = runtimeval_string(buf);
+        free(buf);
+        return ret;
+    }
+
+    fprintf(stderr, "Invalid operation %s for operand types: \"number\" and \"string\"\n", op);
+    exit(EXIT_FAILURE);
+}
+
 RuntimeVal eval_assignment_expr(AssignmentExpr a, Scope *scope)
 {
     if (a.assigne->kind != EXPR_Identifier)
     {
-        fprintf(stderr,"Cannot assign value to non-identifier.\n");
+        fprintf(stderr, "Cannot assign value to non-identifier.\n");
         exit(EXIT_FAILURE);
     }
-    return setvar(scope,a.assigne->data.i.symbol,eval_expr(a.value,scope));
+    return setvar(scope, a.assigne->data.i.symbol, eval_expr(a.value, scope));
 }

@@ -17,6 +17,25 @@ Expr *make_expr_numeric(int n)
     return ret;
 }
 
+Expr *make_expr_string(char *s)
+{
+    char *copied = my_str_dup(s);
+    if (!copied)
+    {
+        fprintf(stderr, "Memory allocation error. Happened during making of a StringLiteral.\n");
+        exit(EXIT_FAILURE);
+    }
+    Expr *ret = malloc(sizeof(Expr));
+    if (!ret)
+    {
+        fprintf(stderr, "Memory allocation error. Happened during allocation of Expr on the heap.\n");
+        exit(EXIT_FAILURE);
+    }
+    ret->data.s.s = copied;
+    ret->kind = EXPR_StringLiteral;
+    return ret;
+}
+
 Expr *make_expr_ident(char *c)
 {
     char *copied = my_str_dup(c);
@@ -142,6 +161,9 @@ void free_expr(Expr *expr)
     case EXPR_Identifier:
         free(expr->data.i.symbol);
         break;
+    case EXPR_StringLiteral:
+        free(expr->data.s.s);
+        break;
     case EXPR_BinaryExpr:
         free_expr(expr->data.be.left);
         free_expr(expr->data.be.right);
@@ -201,6 +223,8 @@ static const char *expr_kind_str(ExprType kind)
         return "NumericLiteral";
     case EXPR_Identifier:
         return "Identifier";
+    case EXPR_StringLiteral:
+        return "StringLiteral";
     case EXPR_BinaryExpr:
         return "BinaryExpr";
     case EXPR_AssignmentExpr:
@@ -254,6 +278,12 @@ void dump_expr(Expr *expr, int depth)
         printf(",\n");
         indent(depth + 1);
         printf("\"symbol\": \"%s\"\n", expr->data.i.symbol);
+        break;
+    
+    case EXPR_StringLiteral:
+        printf(",\n");
+        indent(depth + 1);
+        printf("\"string\": \"%s\"\n", expr->data.s.s);
         break;
 
     case EXPR_BinaryExpr:
