@@ -104,46 +104,16 @@ RuntimeVal eval_string_binary_expr(StringVal left, StringVal right, char *op)
 {
     if (!strcmp(op, "+"))
     {
-        size_t len = 0;
-        size_t cap = 1024;
-        char *buf = malloc(cap + 1);
-
+        size_t left_size = strlen(left.value);
+        size_t right_size = strlen(right.value);
+        char *buf = malloc(left_size + right_size + 1);
         if (!buf)
         {
             fprintf(stderr, "Memory allocation error happened during addition of string %s and string %s", right.value, left.value);
             exit(EXIT_FAILURE);
         }
-
-        for (size_t i = 0; left.value[i]; i++)
-        {
-            if (len == cap)
-            {
-                cap += 1024;
-                buf = realloc(buf, cap + 1);
-                if (!buf)
-                {
-                    fprintf(stderr, "Memory allocation error happened during addition of string %s and string %s", right.value, left.value);
-                    exit(EXIT_FAILURE);
-                }
-            }
-            buf[len++] = left.value[i];
-        }
-
-        for (size_t i = 0; right.value[i]; i++)
-        {
-            if (len == cap)
-            {
-                cap += 1024;
-                buf = realloc(buf, cap + 1);
-                if (!buf)
-                {
-                    fprintf(stderr, "Memory allocation error happened during addition of string %s and string %s", right.value, left.value);
-                    exit(EXIT_FAILURE);
-                }
-            }
-            buf[len++] = right.value[i];
-        }
-        buf[len++] = '\0';
+        memcpy(buf, left.value, strlen(left.value));
+        memcpy(buf + strlen(left.value), right.value, strlen(right.value) + 1);
         RuntimeVal ret = runtimeval_string(buf);
         free(buf);
         return ret;
