@@ -167,6 +167,7 @@ void free_expr(Expr *expr)
     case EXPR_BinaryExpr:
         free_expr(expr->data.be.left);
         free_expr(expr->data.be.right);
+        free(expr->data.be.op);
         break;
     case EXPR_AssignmentExpr:
         free_expr(expr->data.a.assigne);

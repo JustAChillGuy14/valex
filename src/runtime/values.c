@@ -51,6 +51,26 @@ void dump_value(RuntimeVal val)
     }
 }
 
+RuntimeVal copy_value(RuntimeVal value)
+{
+    RuntimeVal ret;
+    switch (value.type)
+    {
+    case VAL_Null:
+    case VAL_Number:
+        ret = value;
+        break;
+    case VAL_String:
+        ret.type = VAL_String;
+        ret.data.s.value = my_str_dup(value.data.s.value);
+        break;
+    default:
+        fprintf(stderr,"Exhaustive handling of ValueType in copy_value.\n");
+        exit(EXIT_FAILURE);
+    }
+    return ret;
+}
+
 void free_value(RuntimeVal *value)
 {
     switch (value->type)

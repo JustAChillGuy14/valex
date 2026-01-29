@@ -29,6 +29,7 @@ typedef struct
     Token *tokens;
 } TokenArray;
 
+//TODO: move my_str_dup into strutils or something.
 char *my_str_dup(const char *str);
 
 int is_binop(char c);

@@ -78,7 +78,7 @@ RuntimeVal declarevar(Scope *scope, char *varname, RuntimeVal value, int isconst
         }
     }
 
-    return value;
+    return copy_value(value);
 }
 
 RuntimeVal getvar(Scope *scope, char *varname)
@@ -90,7 +90,7 @@ RuntimeVal getvar(Scope *scope, char *varname)
         fprintf(stderr, "Cannot resolve variable %s\n", varname);
         exit(EXIT_FAILURE);
     }
-    return s->values[idx];
+    return copy_value(s->values[idx]);
 }
 
 RuntimeVal setvar(Scope *scope, char *varname, RuntimeVal value)
@@ -112,7 +112,7 @@ RuntimeVal setvar(Scope *scope, char *varname, RuntimeVal value)
         }
     }
     s->values[i] = value;
-    return value;
+    return copy_value(value);
 }
 
 void init_scope(Scope *scope)
@@ -152,6 +152,7 @@ Scope new_scope(Scope *parent)
 void init_global_scope(Scope *scope)
 {
     init_scope(scope);
+    scope->parent = NULL;
     char *null = "null";
     declarevar(scope, null, runtimeval_null(), 1);
 }

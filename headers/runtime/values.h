@@ -32,5 +32,7 @@ RuntimeVal runtimeval_null();
 
 void dump_value(RuntimeVal val);
 
+RuntimeVal copy_value(RuntimeVal val);
+
 void free_value(RuntimeVal *val);
 #endif

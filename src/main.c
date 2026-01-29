@@ -53,6 +53,7 @@ int main()
             
             if (!strcmp(buf,"exit"))
             {
+                free_scope(&s);
                 exit(0); //We cannot just "break" because it would print out a '\n'(since EOF was triggered.)
             }
 
@@ -60,11 +61,13 @@ int main()
             RuntimeVal evaled = eval_program(program, &s);
             dump_value(evaled);
             free_program(&program);
+            free_value(&evaled);
             free(buf);
             buf = NULL;
             printf(">>>");
         }
     }
     printf("\n");
+    free_scope(&s);
     return 0;
 }

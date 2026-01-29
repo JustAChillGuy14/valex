@@ -74,15 +74,26 @@ RuntimeVal eval_binary_expr(BinaryExpr be, Scope *scope)
 
     if (left.type == VAL_String && right.type == VAL_String)
     {
-        return eval_string_binary_expr(left.data.s,right.data.s,be.op);
+        RuntimeVal ret = eval_string_binary_expr(left.data.s, right.data.s, be.op);
+        free_value(&left);
+        free_value(&right);
+        return ret;
     }
 
     if ((left.type == VAL_Number && right.type == VAL_String) || (left.type == VAL_String && right.type == VAL_Number))
     {
+        RuntimeVal ret;
         if (left.type == VAL_Number)
-            return eval_numeric_string_binary_expr(left.data.n, right.data.s, be.op);
+        {
+            ret = eval_numeric_string_binary_expr(left.data.n, right.data.s, be.op);
+            free_value(&right);
+        }
         else
-            return eval_numeric_string_binary_expr(right.data.n, left.data.s, be.op);
+        {
+            ret = eval_numeric_string_binary_expr(right.data.n, left.data.s, be.op);
+            free_value(&left);        
+        }
+        return ret;
     }
 
     fprintf(stderr, "Exhaustive handling of operand types in eval_binary_expr\n");
@@ -138,7 +149,7 @@ RuntimeVal eval_string_binary_expr(StringVal left, StringVal right, char *op)
         return ret;
     }
 
-    fprintf(stderr,"Invalid operand operation %s for operand types \"string\" and \"string\"\n",op);
+    fprintf(stderr, "Invalid operand operation %s for operand types \"string\" and \"string\"\n", op);
     exit(EXIT_FAILURE);
 }
 
@@ -169,13 +180,13 @@ RuntimeVal eval_numeric_string_binary_expr(NumberVal left, StringVal right, char
 {
     if (!strcmp(op, "*"))
     {
-        if (left.value != floor(left.value))
+        if (left.value != (int)left.value)
         {
             fprintf(stderr, "Cannot multiply string with non-integer.");
             exit(EXIT_FAILURE);
         }
 
-        //size_t i = 0;
+        // size_t i = 0;
         size_t len = strlen(right.value);
         size_t total = left.value * len;
         char *buf = malloc(total + 1);
@@ -186,9 +197,9 @@ RuntimeVal eval_numeric_string_binary_expr(NumberVal left, StringVal right, char
             exit(EXIT_FAILURE);
         }
 
-         // Copy first instance
+        // Copy first instance
         memcpy(buf, right.value, len);
-        size_t copied = len;        
+        size_t copied = len;
 
         while (copied < total)
         {

@@ -125,6 +125,7 @@ Expr *parse_additive_expr(Parser *p)
         }
         Expr *right = parse_multiplicative_expr(p);
         left = make_expr_binary(left,right,op);
+        free(op);
     }
     return left;
 }
@@ -142,6 +143,7 @@ Expr *parse_multiplicative_expr(Parser *p)
         }
         Expr *right = parse_primary_expr(p);
         left = make_expr_binary(left,right,op);
+        free(op);
     }
     return left;
 }
