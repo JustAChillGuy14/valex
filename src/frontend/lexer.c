@@ -127,15 +127,16 @@ Token *tokenize(const char *src)
                 buf[len++] = *src++;
             }
             buf[len++] = '\0';
-            if (!strcmp(buf,"let"))
+            if (!strcmp(buf, "let"))
             {
-                tk_arr_append(&ret,token(buf,TOKENTYPE_Let));
+                tk_arr_append(&ret, token(buf, TOKENTYPE_Let));
             }
-            else if (!strcmp(buf,"const"))
+            else if (!strcmp(buf, "const"))
             {
-                tk_arr_append(&ret,token(buf,TOKENTYPE_Const));
+                tk_arr_append(&ret, token(buf, TOKENTYPE_Const));
             }
-            else { 
+            else
+            {
                 tk_arr_append(&ret, token(buf, TOKENTYPE_Identifier));
             }
             free(buf);
@@ -197,9 +198,9 @@ Token *tokenize(const char *src)
                 }
                 buf[len++] = *src++;
             }
-            if (*src != '"') //We reached end of src,but didnt get '"'
+            if (*src != '"') // We reached end of src,but didnt get '"'
             {
-                fprintf(stderr,"String literal not ended.\n");
+                fprintf(stderr, "String literal not ended.\n");
                 exit(EXIT_FAILURE);
             }
             buf[len++] = '\0';
@@ -234,9 +235,45 @@ Token *tokenize(const char *src)
                 src++;
             }
         }
+        else if (*src == '/' && src[1] == '*') // Even if src[1] is '\0' then it's not like its illegal but if src[0] is '\0' then it shouldve already been stopped
+        {
+            src++;
+            src++;
+            size_t depth = 1;
+            while (depth)
+            {
+                while (*src && !(*src == '*' && src[1] == '/'))
+                {
+                    if (*src == '/' && src[1] == '*')
+                    {
+                        depth++;
+                        src++;
+                        src++;
+                    }
+                    else src++;
+                }
+                if (!*src)
+                {
+                    if (depth == 1)
+                    {
+                        fprintf(stderr, "Unclosed multi-line comment.\n");
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Unclosed multi-line comment at depth %zu.\n", depth);
+                    }
+                    exit(EXIT_FAILURE);
+                }
+                src++;
+                src++;
+                depth--;
+            }
+            src++;
+            src++;
+        }
         else if (is_binop(*src))
         {
-            tk_arr_append(&ret, token(binopstr(*src), TOKENTYPE_OpenParen));
+            tk_arr_append(&ret, token(binopstr(*src), TOKENTYPE_BinaryOperator));
             src++;
         }
         else if (is_skippable(*src))

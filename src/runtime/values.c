@@ -37,6 +37,30 @@ void dump_value(RuntimeVal val)
     switch (val.type)
     {
     case VAL_Number:
+        if ((int)(val.data.n.value) == val.data.n.value) {
+            printf("%.0f\n",val.data.n.value);
+            break;
+        }
+        else if ((int)(val.data.n.value * 10) == (val.data.n.value * 10)) {
+            printf("%.1f\n",val.data.n.value);
+            break;
+        }
+        else if ((int)(val.data.n.value * 100) == (val.data.n.value * 100)) {
+            printf("%.2f\n",val.data.n.value);
+            break;
+        }
+        else if ((int)(val.data.n.value * 1000) == (val.data.n.value * 1000)) {
+            printf("%.3f\n",val.data.n.value);
+            break;
+        }
+        else if ((int)(val.data.n.value * 10000) == (val.data.n.value * 10000)) {
+            printf("%.4f\n",val.data.n.value);
+            break;
+        }
+        else if ((int)(val.data.n.value * 100000) == (val.data.n.value * 100000)) {
+            printf("%.5f\n",val.data.n.value);
+            break;
+        }
         printf("%f\n",val.data.n.value);
         break;
     case VAL_String:

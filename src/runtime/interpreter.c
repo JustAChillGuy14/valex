@@ -34,6 +34,9 @@ RuntimeVal eval_stmt(Stmt *stmt, Scope *scope)
 
 RuntimeVal eval_variable_declaration_stmt(VariableDeclarationStmt vds, Scope *scope)
 {
+    if (!vds.value) {
+        return declarevar(scope, vds.ident, runtimeval_null(), 0); // must not be constant.
+    }
     return declarevar(scope, vds.ident, eval_expr(vds.value, scope), vds.isConst);
 }
 
