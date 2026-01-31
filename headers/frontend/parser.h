@@ -27,5 +27,6 @@ Expr *parse_assignment_expr(Parser *p);
 Expr *parse_comparision_expr(Parser *p);
 Expr *parse_additive_expr(Parser *p);
 Expr *parse_multiplicative_expr(Parser *p);
+Expr *parse_unary_expr(Parser *p);
 Expr *parse_primary_expr(Parser *p);
 #endif

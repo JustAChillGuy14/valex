@@ -50,12 +50,82 @@ RuntimeVal eval_expr(Expr *expr, Scope *scope)
         return runtimeval_string(expr->data.s.s);
     case EXPR_Identifier:
         return getvar(scope, expr->data.i.symbol);
+    case EXPR_UnaryExpr:
+        return eval_unary_expr(expr->data.ue, scope);
     case EXPR_BinaryExpr:
         return eval_binary_expr(expr->data.be, scope);
     case EXPR_AssignmentExpr:
         return eval_assignment_expr(expr->data.a, scope);
     default:
         fprintf(stderr, "Exhaustive handling of ExprType in eval_expr.\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+RuntimeVal eval_unary_expr(UnaryExpr ue, Scope *scope)
+{
+    RuntimeVal on = eval_expr(ue.on,scope);
+    switch (ue.op)
+    {
+    case '!':
+        switch (on.type)
+        {
+        case VAL_Number:
+            return runtimeval_bool(!on.data.n.value);
+        case VAL_Bool:
+            return runtimeval_bool(!on.data.b.value);
+        case VAL_Null:
+            return runtimeval_bool(true);
+        case VAL_String:
+            return runtimeval_bool(*on.data.s.value);
+        default:
+            fprintf(stderr, "Exhaustive handling of ValueType in eval_unary_expr(`!`)");
+            exit(EXIT_FAILURE);
+        }
+        break;
+    case '~':
+        switch (on.type)
+        {
+        case VAL_Number:
+            if ((int)on.data.n.value != on.data.n.value)
+            {
+                fprintf(stderr, "Cannot perform ~ on non-integer value.");
+                exit(EXIT_FAILURE);
+            }
+            return runtimeval_number(~(int)(on.data.n.value));
+        case VAL_Bool:
+            return runtimeval_bool(!on.data.b.value); // Bitwise not is just logical not for booleans.
+        case VAL_Null:
+            fprintf(stderr, "Cannot perform ~ on null value.");
+            exit(EXIT_FAILURE);
+        case VAL_String:
+            fprintf(stderr, "Cannot perform ~ on string value.");
+            exit(EXIT_FAILURE);
+        default:
+            fprintf(stderr, "Exhaustive handling of ValueType in eval_unary_expr(`~`)");
+            exit(EXIT_FAILURE);
+        }
+        break;
+    case '-':
+        switch (on.type)
+        {
+        case VAL_Number:
+            return runtimeval_number(-on.data.n.value);
+        case VAL_Bool:
+            return runtimeval_bool(-on.data.b.value); // Bitwise not is just logical not for booleans.
+        case VAL_Null:
+            fprintf(stderr, "Cannot perform - on null value.");
+            exit(EXIT_FAILURE);
+        case VAL_String:
+            fprintf(stderr, "Cannot perform - on string value.");
+            exit(EXIT_FAILURE);
+        default:
+            fprintf(stderr, "Exhaustive handling of ValueType in eval_unary_expr(`-`)");
+            exit(EXIT_FAILURE);
+        }
+        break;
+    default:
+        fprintf(stderr, "Exhaustive handling of UnaryOperator in eval_unary_expr");
         exit(EXIT_FAILURE);
     }
 }
@@ -202,7 +272,7 @@ RuntimeVal eval_bool_binary_expr(BoolVal left, BoolVal right, char *op)
         return runtimeval_bool(left.value != right.value);
     }
 
-    fprintf(stderr, "Invalid operand operation %s for operand types \"string\" and \"string\"\n", op);
+    fprintf(stderr, "Invalid operand operation %s for operand types \"bool\" and \"bool\"\n", op);
     exit(EXIT_FAILURE);
 }
 
@@ -252,7 +322,7 @@ RuntimeVal eval_numeric_bool_expr(NumberVal left, BoolVal right, char *op)
 {
     if (!strcmp(op, "=="))
     {
-        return runtimeval_bool(left.value == right.value);
+        return runtimeval_bool(right.value ? left.value : !left.value);
     }
     else if (!strcmp(op, "<"))
     {
@@ -271,7 +341,7 @@ RuntimeVal eval_numeric_bool_expr(NumberVal left, BoolVal right, char *op)
         return runtimeval_bool(right.value >= left.value);
     }
 
-    fprintf(stderr, "Invalid operation %s for operand types: \"number\" and \"string\"\n", op);
+    fprintf(stderr, "Invalid operation %s for operand types: \"number\" and \"bool\"\n", op);
     exit(EXIT_FAILURE);
 }
 

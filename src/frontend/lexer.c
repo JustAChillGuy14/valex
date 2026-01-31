@@ -56,6 +56,11 @@ void tk_arr_append(TokenArray *arr, Token tok)
     arr->tokens[arr->len++] = tok;
 }
 
+int is_unop(char c)
+{
+    return c == '!' || c == '~';
+}
+
 int is_binop(char c)
 {
     return c == '+' || c == '-' || c == '*' || c == '/';
@@ -75,6 +80,22 @@ char *binopstr(char c)
         return "/";
     default:
         fprintf(stderr, "Exhaustive handling of binary operators in binopstr\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+char *unopstr(char c)
+{
+    switch (c)
+    {
+    case '~':
+        return "~";
+        break;
+    case '!':
+        return "!";
+        break;
+    default:
+        fprintf(stderr, "Exhaustive handling of unary operators in unopstr\n");
         exit(EXIT_FAILURE);
     }
 }
@@ -308,6 +329,11 @@ Token *tokenize(const char *src)
         else if (is_binop(*src))
         {
             tk_arr_append(&ret, token(binopstr(*src), TOKENTYPE_BinaryOperator));
+            src++;
+        }
+        else if (is_unop(*src))
+        {
+            tk_arr_append(&ret, token(unopstr(*src), TOKENTYPE_UnaryOperator));
             src++;
         }
         else if (is_skippable(*src))

@@ -10,6 +10,9 @@ RuntimeVal eval_stmt(Stmt *stmt, Scope *scope);
 RuntimeVal eval_variable_declaration_stmt(VariableDeclarationStmt vds, Scope *scope);
 
 RuntimeVal eval_expr(Expr *expr, Scope *scope);
+
+RuntimeVal eval_unary_expr(UnaryExpr ue,Scope *scope);
+
 RuntimeVal eval_binary_expr(BinaryExpr be, Scope *scope);
 
 RuntimeVal eval_numeric_binary_expr(NumberVal left, NumberVal right, char *op);

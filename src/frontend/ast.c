@@ -55,6 +55,20 @@ Expr *make_expr_ident(char *c)
     return ret;
 }
 
+Expr *make_expr_unary(Expr *on, char op)
+{
+    Expr *ret = malloc(sizeof(Expr));
+    if (!ret)
+    {
+        fprintf(stderr, "Memory allocation error. Happened during allocation of Expr on the heap.\n");
+        exit(EXIT_FAILURE);
+    }
+    ret->data.ue.on = on;
+    ret->data.ue.op = op;
+    ret->kind = EXPR_UnaryExpr;
+    return ret;
+}
+
 Expr *make_expr_binary(Expr *left, Expr *right, char *op)
 {
     Expr *ret = malloc(sizeof(Expr));
@@ -163,6 +177,9 @@ void free_expr(Expr *expr)
         break;
     case EXPR_StringLiteral:
         free(expr->data.s.s);
+        break;
+    case EXPR_UnaryExpr:
+        free(expr->data.ue.on);
         break;
     case EXPR_BinaryExpr:
         free_expr(expr->data.be.left);
@@ -287,6 +304,18 @@ void dump_expr(Expr *expr, int depth)
         printf("\"string\": \"%s\"\n", expr->data.s.s);
         break;
 
+    case EXPR_UnaryExpr:
+        printf(",\n");
+
+        indent(depth + 1);
+        printf("\"op\": \"%c\",\n", expr->data.ue.op);
+
+        indent(depth + 1);
+        printf("\"on\": ");
+        dump_expr(expr->data.ue.on, depth + 1);
+        printf("\n");
+        break;
+    
     case EXPR_BinaryExpr:
         printf(",\n");
 

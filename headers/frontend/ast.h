@@ -8,6 +8,7 @@ typedef enum
     EXPR_StringLiteral,
     EXPR_Identifier,
     // Expressions
+    EXPR_UnaryExpr,
     EXPR_BinaryExpr,
     EXPR_AssignmentExpr,
 } ExprType;
@@ -31,6 +32,12 @@ typedef struct
 
 typedef struct
 {
+    struct Expr *on;
+    char op; // my unary expressions will ALWAYS have only one character.
+} UnaryExpr;
+
+typedef struct
+{
     struct Expr *left;
     struct Expr *right;
     char *op; // Dynamically allocated,big waste rn,but when != >= is added,greatness!
@@ -50,6 +57,7 @@ struct Expr
         NumericLiteral n;
         StringLiteral s;
         Identifier i;
+        UnaryExpr ue;
         BinaryExpr be;
         AssignmentExpr a;
     } data;
@@ -90,6 +98,8 @@ typedef struct
 Expr *make_expr_numeric(int n);
 Expr *make_expr_string(char *s);
 Expr *make_expr_ident(char *symbol);
+
+Expr *make_expr_unary(Expr *on, char op);
 Expr *make_expr_binary(Expr *left, Expr *right, char *op);
 Expr *make_expr_assignment(Expr *assigne,Expr *value);
 

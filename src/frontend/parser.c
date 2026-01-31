@@ -150,7 +150,7 @@ Expr *parse_additive_expr(Parser *p)
 
 Expr *parse_multiplicative_expr(Parser *p)
 {
-    Expr *left = parse_primary_expr(p);
+    Expr *left = parse_unary_expr(p);
     while (at(p).value && (!strcmp(at(p).value,"*") || !strcmp(at(p).value,"/")))
     {
         char *op = my_str_dup(eat(p).value);
@@ -159,11 +159,23 @@ Expr *parse_multiplicative_expr(Parser *p)
             fprintf(stderr,"Memory allocation error when copying operation.");
             exit(EXIT_FAILURE);
         }
-        Expr *right = parse_primary_expr(p);
+        Expr *right = parse_unary_expr(p);
         left = make_expr_binary(left,right,op);
         free(op);
     }
     return left;
+}
+
+Expr *parse_unary_expr(Parser *p)
+{
+    // when something like -- is added,change the check.
+    if (at(p).kind == TOKENTYPE_UnaryOperator || *at(p).value == '-')
+    {
+        char op = *eat(p).value;
+        Expr *on = parse_primary_expr(p);
+        return make_expr_unary(on, op);
+    }
+    return parse_primary_expr(p);
 }
 
 Expr *parse_primary_expr(Parser *p)
@@ -181,6 +193,18 @@ Expr *parse_primary_expr(Parser *p)
         Expr *ret = parse_expr(p);
         expecterr(p,TOKENTYPE_CloseParen,"Expected ) to an (");
         return ret;
+    case TOKENTYPE_UnaryOperator:
+        return parse_unary_expr(p);
+    case TOKENTYPE_BinaryOperator:
+        // Change when adding --
+        if (*at(p).value == '-')
+        {
+            return parse_unary_expr(p);
+        }
+        /*
+        Let it fallthrough to erroring.
+        */
+        // fallthrough
     default:
         if (!at(p).value)
         {

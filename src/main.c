@@ -19,7 +19,7 @@ int main()
     char *buf = NULL;
     size_t len;
     size_t cap;
-    printf(">>>");
+    printf(">>> ");
     while ((c = getchar()) != EOF)
     {
         if (!buf)
@@ -64,7 +64,7 @@ int main()
             free_value(&evaled);
             free(buf);
             buf = NULL;
-            printf(">>>");
+            printf(">>> ");
         }
     }
     printf("\n");
