@@ -19,6 +19,14 @@ RuntimeVal runtimeval_number(double val)
     return ret;
 }
 
+RuntimeVal runtimeval_bool(bool b)
+{
+    RuntimeVal ret;
+    ret.type = VAL_Bool;
+    ret.data.b.value = b;
+    return ret;
+}
+
 RuntimeVal runtimeval_string(char *s)
 {
     RuntimeVal ret;
@@ -63,6 +71,9 @@ void dump_value(RuntimeVal val)
         }
         printf("%f\n",val.data.n.value);
         break;
+    case VAL_Bool:
+        printf(val.data.b.value ? "true\n" : "false\n");
+        break;
     case VAL_String:
         printf("%s\n",val.data.s.value);
         break;
@@ -82,6 +93,7 @@ RuntimeVal copy_value(RuntimeVal value)
     {
     case VAL_Null:
     case VAL_Number:
+    case VAL_Bool:
         ret = value;
         break;
     case VAL_String:
@@ -101,6 +113,7 @@ void free_value(RuntimeVal *value)
     {
     case VAL_Null:
     case VAL_Number:
+    case VAL_Bool:
         break;
     case VAL_String:
         free(value->data.s.value);

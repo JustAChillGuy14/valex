@@ -153,8 +153,9 @@ void init_global_scope(Scope *scope)
 {
     init_scope(scope);
     scope->parent = NULL;
-    char *null = "null";
-    declarevar(scope, null, runtimeval_null(), 1);
+    declarevar(scope, "null", runtimeval_null(), 1);
+    declarevar(scope, "true", runtimeval_bool(true), 1);
+    declarevar(scope, "false", runtimeval_bool(false), 1);
 }
 
 void free_scope(Scope *scope)

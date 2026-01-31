@@ -102,7 +102,7 @@ Expr *parse_expr(Parser *p)
 
 Expr *parse_assignment_expr(Parser *p)
 {
-    Expr *assigne = parse_additive_expr(p);
+    Expr *assigne = parse_comparision_expr(p);
     if (at(p).kind == TOKENTYPE_Equals)
     {
         eat(p);
@@ -110,6 +110,24 @@ Expr *parse_assignment_expr(Parser *p)
         return make_expr_assignment(assigne,value);
     }
     return assigne;
+}
+
+Expr *parse_comparision_expr(Parser *p)
+{
+    Expr *left = parse_additive_expr(p);
+    while (at(p).value && (!strcmp(at(p).value, "==") || !strcmp(at(p).value, ">=") || !strcmp(at(p).value, "<=") || !strcmp(at(p).value, ">") || !strcmp(at(p).value, "<")))
+    {
+        char *op = my_str_dup(eat(p).value);
+        if (!op)
+        {
+            fprintf(stderr,"Memory allocation error when copying operation.");
+            exit(EXIT_FAILURE);
+        }
+        Expr *right = parse_additive_expr(p);
+        left = make_expr_binary(left,right,op);
+        free(op);
+    }
+    return left;
 }
 
 Expr *parse_additive_expr(Parser *p)

@@ -218,8 +218,42 @@ Token *tokenize(const char *src)
             tk_arr_append(&ret, token(")", TOKENTYPE_CloseParen));
             src++;
         }
+        else if (*src == '>')
+        {
+            if (src[1] == '=')
+            {
+                tk_arr_append(&ret, token(">=", TOKENTYPE_BinaryOperator));
+                src++;
+                src++;
+                continue;
+            }
+
+            tk_arr_append(&ret, token(">", TOKENTYPE_BinaryOperator));
+            src++;
+        }
+        else if (*src == '<')
+        {
+            if (src[1] == '=')
+            {
+                tk_arr_append(&ret, token("<=", TOKENTYPE_BinaryOperator));
+                src++;
+                src++;
+                continue;
+            }
+
+            tk_arr_append(&ret, token("<", TOKENTYPE_BinaryOperator));
+            src++;
+        }
         else if (*src == '=')
         {
+            if (src[1] == '=')
+            {
+                tk_arr_append(&ret, token("==", TOKENTYPE_BinaryOperator));
+                src++;
+                src++;
+                continue;
+            }
+            
             tk_arr_append(&ret, token("=", TOKENTYPE_Equals));
             src++;
         }

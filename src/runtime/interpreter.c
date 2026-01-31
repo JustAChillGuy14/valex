@@ -64,7 +64,7 @@ RuntimeVal eval_binary_expr(BinaryExpr be, Scope *scope)
 {
     RuntimeVal left = eval_expr(be.left, scope);
     RuntimeVal right = eval_expr(be.right, scope);
-
+    
     if (left.type == VAL_Null || right.type == VAL_Null)
     {
         return runtimeval_null();
@@ -73,6 +73,11 @@ RuntimeVal eval_binary_expr(BinaryExpr be, Scope *scope)
     if (left.type == VAL_Number && right.type == VAL_Number)
     {
         return eval_numeric_binary_expr(left.data.n, right.data.n, be.op);
+    }
+
+    if (left.type == VAL_Bool && right.type == VAL_Bool)
+    {
+        return eval_bool_binary_expr(left.data.b, right.data.b, be.op);
     }
 
     if (left.type == VAL_String && right.type == VAL_String)
@@ -99,30 +104,20 @@ RuntimeVal eval_binary_expr(BinaryExpr be, Scope *scope)
         return ret;
     }
 
-    fprintf(stderr, "Exhaustive handling of operand types in eval_binary_expr\n");
-    exit(EXIT_FAILURE);
-}
-
-RuntimeVal eval_string_binary_expr(StringVal left, StringVal right, char *op)
-{
-    if (!strcmp(op, "+"))
+    if ((left.type == VAL_Bool && right.type == VAL_Number) || (left.type == VAL_Number && right.type == VAL_Bool))
     {
-        size_t left_size = strlen(left.value);
-        size_t right_size = strlen(right.value);
-        char *buf = malloc(left_size + right_size + 1);
-        if (!buf)
-        {
-            fprintf(stderr, "Memory allocation error happened during addition of string %s and string %s", right.value, left.value);
-            exit(EXIT_FAILURE);
-        }
-        memcpy(buf, left.value, strlen(left.value));
-        memcpy(buf + strlen(left.value), right.value, strlen(right.value) + 1);
-        RuntimeVal ret = runtimeval_string(buf);
-        free(buf);
-        return ret;
+        return left.type == VAL_Number ? eval_numeric_bool_expr(left.data.n,right.data.b, be.op) : eval_numeric_bool_expr(right.data.n,left.data.b, be.op);
     }
 
-    fprintf(stderr, "Invalid operand operation %s for operand types \"string\" and \"string\"\n", op);
+    if (left.type != right.type && !strcmp(be.op, "=="))
+    {
+        if (left.type != right.type)
+        {
+            return runtimeval_bool(false);
+        }
+    }
+
+    fprintf(stderr, "Exhaustive handling of operand types in eval_binary_expr\n");
     exit(EXIT_FAILURE);
 }
 
@@ -144,8 +139,70 @@ RuntimeVal eval_numeric_binary_expr(NumberVal left, NumberVal right, char *op)
     {
         return runtimeval_number(left.value / right.value);
     }
+    else if (!strcmp(op, "=="))
+    {
+        return runtimeval_bool(left.value == right.value);
+    }
+    else if (!strcmp(op, ">="))
+    {
+        return runtimeval_bool(left.value >= right.value);
+    }
+    else if (!strcmp(op, "<="))
+    {
+        return runtimeval_bool(left.value <= right.value);
+    }
+    else if (!strcmp(op, ">"))
+    {
+        return runtimeval_bool(left.value > right.value);
+    }
+    else if (!strcmp(op, "<"))
+    {
+        return runtimeval_bool(left.value < right.value);
+    }
 
     fprintf(stderr, "Invalid operation %s for operand types: \"number\" and \"number\"\n", op);
+    exit(EXIT_FAILURE);
+}
+
+RuntimeVal eval_string_binary_expr(StringVal left, StringVal right, char *op)
+{
+    if (!strcmp(op, "+"))
+    {
+        size_t left_size = strlen(left.value);
+        size_t right_size = strlen(right.value);
+        char *buf = malloc(left_size + right_size + 1);
+        if (!buf)
+        {
+            fprintf(stderr, "Memory allocation error happened during addition of string %s and string %s", right.value, left.value);
+            exit(EXIT_FAILURE);
+        }
+        memcpy(buf, left.value, strlen(left.value));
+        memcpy(buf + strlen(left.value), right.value, strlen(right.value) + 1);
+        RuntimeVal ret = runtimeval_string(buf);
+        free(buf);
+        return ret;
+    }
+    else if (!strcmp(op, "=="))
+    {
+        return runtimeval_bool(!strcmp(left.value,right.value));
+    }
+
+    fprintf(stderr, "Invalid operand operation %s for operand types \"string\" and \"string\"\n", op);
+    exit(EXIT_FAILURE);
+}
+
+RuntimeVal eval_bool_binary_expr(BoolVal left, BoolVal right, char *op)
+{
+    if (!strcmp(op, "=="))
+    {
+        return runtimeval_bool(left.value == right.value);
+    }
+    else if (!strcmp(op, "!="))
+    {
+        return runtimeval_bool(left.value != right.value);
+    }
+
+    fprintf(stderr, "Invalid operand operation %s for operand types \"string\" and \"string\"\n", op);
     exit(EXIT_FAILURE);
 }
 
@@ -185,6 +242,33 @@ RuntimeVal eval_numeric_string_binary_expr(NumberVal left, StringVal right, char
         RuntimeVal ret = runtimeval_string(buf);
         free(buf);
         return ret;
+    }
+
+    fprintf(stderr, "Invalid operation %s for operand types: \"number\" and \"string\"\n", op);
+    exit(EXIT_FAILURE);
+}
+
+RuntimeVal eval_numeric_bool_expr(NumberVal left, BoolVal right, char *op)
+{
+    if (!strcmp(op, "=="))
+    {
+        return runtimeval_bool(left.value == right.value);
+    }
+    else if (!strcmp(op, "<"))
+    {
+        return runtimeval_bool(right.value < left.value);
+    }
+    else if (!strcmp(op, ">"))
+    {
+        return runtimeval_bool(right.value > left.value);
+    }
+    else if (!strcmp(op, "<="))
+    {
+        return runtimeval_bool(right.value <= left.value);
+    }
+    else if (!strcmp(op, ">="))
+    {
+        return runtimeval_bool(right.value >= left.value);
     }
 
     fprintf(stderr, "Invalid operation %s for operand types: \"number\" and \"string\"\n", op);
