@@ -79,7 +79,7 @@ RuntimeVal eval_unary_expr(UnaryExpr ue, Scope *scope)
         case VAL_String:
             return runtimeval_bool(*on.data.s.value);
         default:
-            fprintf(stderr, "Exhaustive handling of ValueType in eval_unary_expr(`!`)");
+            fprintf(stderr, "Exhaustive handling of ValueType in eval_unary_expr(`!`)\n");
             exit(EXIT_FAILURE);
         }
         break;
@@ -89,20 +89,20 @@ RuntimeVal eval_unary_expr(UnaryExpr ue, Scope *scope)
         case VAL_Number:
             if ((int)on.data.n.value != on.data.n.value)
             {
-                fprintf(stderr, "Cannot perform ~ on non-integer value.");
+                fprintf(stderr, "Cannot perform ~ on non-integer value.\n");
                 exit(EXIT_FAILURE);
             }
             return runtimeval_number(~(int)(on.data.n.value));
         case VAL_Bool:
             return runtimeval_bool(!on.data.b.value); // Bitwise not is just logical not for booleans.
         case VAL_Null:
-            fprintf(stderr, "Cannot perform ~ on null value.");
+            fprintf(stderr, "Cannot perform ~ on null value.\n");
             exit(EXIT_FAILURE);
         case VAL_String:
-            fprintf(stderr, "Cannot perform ~ on string value.");
+            fprintf(stderr, "Cannot perform ~ on string value.\n");
             exit(EXIT_FAILURE);
         default:
-            fprintf(stderr, "Exhaustive handling of ValueType in eval_unary_expr(`~`)");
+            fprintf(stderr, "Exhaustive handling of ValueType in eval_unary_expr(`~`)\n");
             exit(EXIT_FAILURE);
         }
         break;
@@ -112,20 +112,20 @@ RuntimeVal eval_unary_expr(UnaryExpr ue, Scope *scope)
         case VAL_Number:
             return runtimeval_number(-on.data.n.value);
         case VAL_Bool:
-            return runtimeval_bool(-on.data.b.value); // Bitwise not is just logical not for booleans.
+            return runtimeval_bool(-on.data.b.value);
         case VAL_Null:
-            fprintf(stderr, "Cannot perform - on null value.");
+            fprintf(stderr, "Cannot perform - on null value.\n");
             exit(EXIT_FAILURE);
         case VAL_String:
-            fprintf(stderr, "Cannot perform - on string value.");
+            fprintf(stderr, "Cannot perform - on string value.\n");
             exit(EXIT_FAILURE);
         default:
-            fprintf(stderr, "Exhaustive handling of ValueType in eval_unary_expr(`-`)");
+            fprintf(stderr, "Exhaustive handling of ValueType in eval_unary_expr(`-`)\n");
             exit(EXIT_FAILURE);
         }
         break;
     default:
-        fprintf(stderr, "Exhaustive handling of UnaryOperator in eval_unary_expr");
+        fprintf(stderr, "Exhaustive handling of UnaryOperator in eval_unary_expr\n");
         exit(EXIT_FAILURE);
     }
 }
